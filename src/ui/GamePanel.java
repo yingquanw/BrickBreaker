@@ -1,20 +1,43 @@
 package ui;
 
+import Model.Ball;
+import Model.Brick;
+import Model.Paddle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements Runnable {
-    static final int GAME_WIDTH = 1000;
-    static final int GAME_HEIGHT = 1500;
+    static final int GAME_WIDTH = 580;
+    static final int GAME_HEIGHT = 700;
     static final Dimension SIZE = new Dimension(GAME_WIDTH, GAME_HEIGHT);
-    static final int BRICK_WIDTH = 80;
-    static final int BRICK_HEIGHT = 20;
-    static final int radius = 5;
+    static final int PADDLE_WIDTH = 50;
+    static final int PADDLE_HEIGHT = 20;
+    static final int BRICK_WIDTH = 50;
+    static final int BRICK_HEIGHT = 40;
+    static final int UPPER_SPACE = 50;
+    static final int BRICK_SPACE = 20;
+    static final int RADIUS = 5;
+    Paddle paddle;
+    Ball ball;
+    ArrayList<Brick> bricks;
+    Thread gameThread;
+    Image image;
 
 
     public GamePanel() {
+        newBall();
+        newPaddle();
+        newBricks();
+        setPreferredSize(SIZE);
+        setFocusable(true);
+        addKeyListener(new AL());
+        gameThread = new Thread(this);
+        gameThread.start();
+
     }
 
     public void paint(Graphics2D g) {
@@ -22,10 +45,30 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void newBall() {
+        ball = new Ball(GAME_WIDTH/2 - RADIUS, 500 , RADIUS*2, RADIUS*2);
 
     }
 
     public void newPaddle() {
+        paddle = new Paddle(GAME_WIDTH/2 - PADDLE_WIDTH/2, 650 - PADDLE_HEIGHT/2,
+                PADDLE_WIDTH, PADDLE_HEIGHT);
+
+    }
+
+    public void newBricks() {
+        bricks = new ArrayList<>();
+        int level = 0;
+        int col = 0;
+        for (int i = 1; i <= 48; i++) {
+            col++;
+            Brick brick = new Brick(col*BRICK_SPACE, UPPER_SPACE + level*BRICK_SPACE,
+                    BRICK_WIDTH, BRICK_HEIGHT, i);
+            if (i % 8 == 0) {
+                level++;
+                col = 0;
+            }
+            bricks.add(brick);
+        }
 
     }
 
@@ -44,10 +87,12 @@ public class GamePanel extends JPanel implements Runnable {
 
     public class AL extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
+            paddle.keyPressed(e);
 
         }
 
         public void keyReleased(KeyEvent e) {
+            paddle.keyReleased(e);
 
         }
     }

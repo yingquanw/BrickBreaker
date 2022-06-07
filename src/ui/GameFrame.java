@@ -11,11 +11,10 @@ public class GameFrame extends JFrame {
         add(panel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+        pack();
         setLocationRelativeTo(null);
         setResizable(false);
         setTitle("Brick Breaker");
-        pack();
-
-
     }
+
 }
