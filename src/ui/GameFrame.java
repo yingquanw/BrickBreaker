@@ -1,6 +1,7 @@
 package ui;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class GameFrame extends JFrame {
 
@@ -10,6 +11,7 @@ public class GameFrame extends JFrame {
         panel = new GamePanel();
         add(panel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBackground(Color.BLACK);
         setVisible(true);
         pack();
         setLocationRelativeTo(null);

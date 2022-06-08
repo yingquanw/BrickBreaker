@@ -3,6 +3,8 @@ package Model;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
+import static ui.GamePanel.GAME_WIDTH;
+
 public class Paddle extends Rectangle {
 
     Color color;
@@ -13,15 +15,21 @@ public class Paddle extends Rectangle {
 
     public Paddle(int x, int y, int width, int height) {
         super(x,y,width,height);
+        color = Color.BLUE;
 
+    }
+
+    public void setX(int x) {
+        this.x = x;
     }
 
     public void move(){
-
+        x = x + xVelocity;
     }
 
-    public void draw(){
-
+    public void draw(Graphics g){
+        g.setColor(color);
+        g.fillRect(x, y, width, height);
     }
 
     public void setXVelocity(int speed) {

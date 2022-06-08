@@ -2,14 +2,24 @@ package Model;
 
 import java.awt.*;
 
+
 public class Brick extends Rectangle {
 
-    public Color color;
-    public int id;
+    Color color;
+    int row;
+    int col;
 
-    public Brick(int x, int y, int width, int height, int id) {
+
+    public Brick(int x, int y, int width, int height, int row, int col) {
         super(x,y,width,height);
-        this.id = id;
-
+        this.row = row;
+        this.col = col;
+        color = Color.white;
     }
+
+    public void draw(Graphics g){
+        g.setColor(color);
+        g.fillRect(x, y, width, height);
+    }
+
 }

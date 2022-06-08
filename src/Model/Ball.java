@@ -1,7 +1,6 @@
 package Model;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 
 public class Ball extends Rectangle{
 
@@ -11,23 +10,25 @@ public class Ball extends Rectangle{
 
     public Ball(int x, int y, int width, int height) {
         super(x,y,width,height);
+        color = Color.yellow;
     }
 
     public void move(){
+        x += xVelocity;
+        y += yVelocity;
 
     }
 
-    public void draw(){
-
+    public void draw(Graphics g){
+        g.setColor(color);
+        g.fillOval(x, y, width ,height);
     }
 
-    public void keyPressed(KeyEvent e) {
-
+    public void setXVelocity(int xVelocity) {
+        this.xVelocity = xVelocity;
     }
 
-    public void keyReleased(KeyEvent e) {
-
+    public void setYVelocity(int yVelocity) {
+        this.yVelocity = yVelocity;
     }
-
-
 }
