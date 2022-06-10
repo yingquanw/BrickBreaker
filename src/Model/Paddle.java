@@ -3,20 +3,18 @@ package Model;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-import static ui.GamePanel.GAME_WIDTH;
 
 public class Paddle extends Rectangle {
 
-    Color color;
-    int xVelocity;
-    int speed = 10;
+    private Color color;
+    private int xVelocity;
+    private int speed = 5;
 
 
 
     public Paddle(int x, int y, int width, int height) {
         super(x,y,width,height);
         color = Color.BLUE;
-
     }
 
     public void setX(int x) {
@@ -36,6 +34,7 @@ public class Paddle extends Rectangle {
         xVelocity = speed;
     }
 
+    // Press LEFT key to go left and RIGHT key to go right
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode()==KeyEvent.VK_LEFT) {
             setXVelocity(-speed);
@@ -54,6 +53,6 @@ public class Paddle extends Rectangle {
         if (e.getKeyCode()==KeyEvent.VK_RIGHT) {
             setXVelocity(0);
         }
-
     }
+
 }

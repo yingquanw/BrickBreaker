@@ -11,22 +11,31 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements Runnable {
+
     public static final int GAME_WIDTH = 580;
     public static final int GAME_HEIGHT = 700;
-    static final Dimension SIZE = new Dimension(GAME_WIDTH, GAME_HEIGHT);
-    static final int PADDLE_WIDTH = 50;
-    static final int PADDLE_HEIGHT = 20;
+    public static final Dimension SIZE = new Dimension(GAME_WIDTH, GAME_HEIGHT);
+    public static final int PADDLE_WIDTH = 100;
+    public static final int PADDLE_HEIGHT = 10;
+    public static final int PADDLE_YPosition = 650;
     public static final int BRICK_WIDTH = 50;
     public static final int BRICK_HEIGHT = 40;
     public static final int UPPER_SPACE = 50;
-    static final int BRICK_SPACE = 20;
-    static final int RADIUS = 5;
-    Graphics graphics;
-    Paddle paddle;
-    Ball ball;
-    ArrayList<Brick> bricks;
-    Thread gameThread;
-    Image image;
+    public static final int BRICK_SPACE = 20;
+    public static final int RADIUS = 8;
+
+    private Paddle paddle;
+    private Direction pDirect;
+    private Ball ball;
+    private ArrayList<Brick> bricks;
+    private Thread gameThread;
+    private Boolean gameStatus;
+
+    enum Direction {
+        LEFT,
+        RESTING,
+        RIGHT
+    }
 
 
     public GamePanel() {
@@ -37,18 +46,48 @@ public class GamePanel extends JPanel implements Runnable {
         setFocusable(true);
         addKeyListener(new AL());
         gameThread = new Thread(this);
+        gameStatus = true;
         gameThread.start();
 
     }
 
-    public void paint(Graphics g) {
-        image = createImage(getWidth(),getHeight());
-        graphics = image.getGraphics();
-        draw(graphics);
-        g.drawImage(image,0,0,this);
+    private void newBall() {
+        ball = new Ball(GAME_WIDTH/2 - RADIUS, GAME_HEIGHT -300 , RADIUS*2, RADIUS*2);
     }
 
-    public void draw(Graphics g) {
+    private void newPaddle() {
+        paddle = new Paddle(GAME_WIDTH/2 - PADDLE_WIDTH/2, PADDLE_YPosition,
+                PADDLE_WIDTH, PADDLE_HEIGHT);
+
+    }
+
+    private void newBricks() {
+        bricks = new ArrayList<>();
+        int row = 0;
+        int col = 0;
+        for (int i = 1; i <= 40; i++) {
+            col++;
+            Brick brick = new Brick(col*BRICK_SPACE + (col - 1)*BRICK_WIDTH, UPPER_SPACE +
+                    row*(BRICK_SPACE + BRICK_HEIGHT),
+                    BRICK_WIDTH, BRICK_HEIGHT, row, col, i);
+            if (i % 8 == 0) {
+                row++;
+                col = 0;
+            }
+            bricks.add(brick);
+        }
+    }
+
+    // Paint the game
+    public void paint(Graphics g) {
+        Image image = createImage(getWidth(),getHeight());
+        Graphics graphics = image.getGraphics();
+        draw(graphics);
+        g.drawImage(image,0,0,null);
+    }
+
+    // Draw paddle, ball, and bricks
+    private void draw(Graphics g) {
         paddle.draw(g);
         ball.draw(g);
         drawBricks(g);
@@ -61,67 +100,19 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    public void newBall() {
-        ball = new Ball(GAME_WIDTH/2 - RADIUS, 500 , RADIUS*2, RADIUS*2);
-
-    }
-
-    public void newPaddle() {
-        paddle = new Paddle(GAME_WIDTH/2 - PADDLE_WIDTH/2, 650 - PADDLE_HEIGHT/2,
-                PADDLE_WIDTH, PADDLE_HEIGHT);
-
-    }
-
-    public void newBricks() {
-        bricks = new ArrayList<>();
-        int row = 0;
-        int col = 0;
-        for (int i = 1; i <= 48; i++) {
-            col++;
-            Brick brick = new Brick(col*BRICK_SPACE + (col - 1)*BRICK_WIDTH, UPPER_SPACE +
-                    row*(BRICK_SPACE + BRICK_HEIGHT),
-                    BRICK_WIDTH, BRICK_HEIGHT, row, col);
-            if (i % 8 == 0) {
-                row++;
-                col = 0;
-            }
-            bricks.add(brick);
-        }
-
-    }
-
-    public void checkCollision() {
-        checkPaddleCollision();
-        checkBallCollision();
-
-    }
-
-    private void checkBallCollision() {
-
-    }
-
-    private void checkPaddleCollision() {
-        double x = paddle.getX();
-        if (x < 0) {
-            paddle.setX(0);
-        }
-        if (x + PADDLE_WIDTH > GAME_WIDTH) {
-            paddle.setX(GAME_WIDTH - PADDLE_WIDTH);
-        }
-
-    }
-
+    // Run the game in 60 frames per second
     public void run() {
         long lastTime = System.nanoTime();
         double amountOfTicks = 60.0;
         double ns = 1000000000 / amountOfTicks;
         double delta = 0;
-        while(true) {
+        while(gameStatus) {
             long now = System.nanoTime();
             delta += (now -lastTime)/ns;
             lastTime = now;
             if(delta >=1) {
                 move();
+                checkPaddleBound();
                 checkCollision();
                 repaint();
                 delta--;
@@ -129,21 +120,113 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    public void move() {
-        ball.move();
+    // Move the paddle and ball
+    private void move() {
+        double prevPosOfPaddle = paddle.getX();
         paddle.move();
+        double currPosOfPaddle = paddle.getX();
+        setPaddleDirection(prevPosOfPaddle, currPosOfPaddle);
+        ball.move();
     }
 
 
+    // Make sure the paddle is within the bound of GAME_WIDTH
+    private void checkPaddleBound() {
+        double x = paddle.getX();
+        if (x < 0) {
+            paddle.setX(0);
+        }
+        if (x + PADDLE_WIDTH > GAME_WIDTH) {
+            paddle.setX(GAME_WIDTH - PADDLE_WIDTH);
+        }
+    }
+
+    // Check if the ball collied with objects
+    private void checkCollision() {
+        checkWall();
+        checkPaddle();
+        checkBrick();
+    }
+
+
+    private void checkWall(){
+        // If the ball touches the bottom of the screen, the player loses the game
+        if (ball.getY() + ball.getHeight() >= GAME_HEIGHT) {
+            gameStatus = false;
+        }
+        // Hit the side walls
+        if (ball.getX() < 0 || ball.getX() + RADIUS*2 > GAME_WIDTH) {
+            ball.setXVelocity(-ball.getXVelocity());
+        }
+        // Hit the celling
+        if (ball.getY() < 0) {
+            ball.setYVelocity(-ball.getYVelocity());
+        }
+    }
+
+    // If the moving direction of the paddle is the same as the ball, the xVelocity of the ball increases,
+    // if opposite, then it decreases.
+    private void checkPaddle(){
+        if (ball.intersects(paddle)) {
+            switch (pDirect) {
+                case LEFT:
+                    ball.setXVelocity(ball.getXVelocity() - 1);
+                    break;
+                case RIGHT:
+                    ball.setXVelocity(ball.getXVelocity() + 1);
+                    break;
+            }
+            ball.setYVelocity(-ball.getYVelocity());
+        }
+    }
+
+    private void checkBrick() {
+        int brickId = 0;
+        // Records the id of the brick that has been hit.
+        for (Brick b: bricks) {
+            if (ball.intersects(b)) {
+                ball.setXVelocity(-ball.getXVelocity());
+                ball.setYVelocity(-ball.getYVelocity());
+                brickId = b.getId();
+                break;
+            }
+        }
+        // If a brick has been hit, delete it.
+        if (brickId != 0) {
+            for(int i = bricks.size() - 1; i >= 0; --i) {
+                if(bricks.get(i).getId() == brickId) {
+                    bricks.remove(i);
+                    break;
+                }
+            }
+            // If there is no brick left, the player wins the game.
+            if (bricks.size() == 0) {
+                gameStatus = false;
+            }
+        }
+    }
+
+    // Records the moving direction of the paddle
+    private void setPaddleDirection(double prev, double curr){
+        if (prev == curr) {
+            pDirect = Direction.RESTING;
+        } else if (prev > curr) {
+            pDirect = Direction.LEFT;
+        } else  {
+            pDirect = Direction.RIGHT;
+        }
+    }
+
+    // Key listener
     public class AL extends KeyAdapter {
+        @Override
         public void keyPressed(KeyEvent e) {
             paddle.keyPressed(e);
-
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
             paddle.keyReleased(e);
-
         }
     }
 }
