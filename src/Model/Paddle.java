@@ -10,8 +10,6 @@ public class Paddle extends Rectangle {
     private int xVelocity;
     private int speed = 5;
 
-
-
     public Paddle(int x, int y, int width, int height) {
         super(x,y,width,height);
         color = Color.BLUE;

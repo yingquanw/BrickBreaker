@@ -30,6 +30,7 @@ public class GamePanel extends JPanel implements Runnable {
     private ArrayList<Brick> bricks;
     private Thread gameThread;
     private Boolean gameStatus;
+    private GameTimer gametimer;
 
     enum Direction {
         LEFT,
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel implements Runnable {
 
 
     public GamePanel() {
+        newTimer();
         newBall();
         newPaddle();
         newBricks();
@@ -47,12 +49,16 @@ public class GamePanel extends JPanel implements Runnable {
         addKeyListener(new AL());
         gameThread = new Thread(this);
         gameStatus = true;
-        gameThread.start();
-
     }
 
+    private void newTimer() {
+        gametimer = new GameTimer();
+        add(gametimer);
+    }
+
+
     private void newBall() {
-        ball = new Ball(GAME_WIDTH/2 - RADIUS, GAME_HEIGHT -300 , RADIUS*2, RADIUS*2);
+        ball = new Ball(GAME_WIDTH/2 - RADIUS, GAME_HEIGHT - 350 , RADIUS*2, RADIUS*2);
     }
 
     private void newPaddle() {
@@ -79,7 +85,8 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     // Paint the game
-    public void paint(Graphics g) {
+    @Override
+    public void paintComponent(Graphics g) {
         Image image = createImage(getWidth(),getHeight());
         Graphics graphics = image.getGraphics();
         draw(graphics);
@@ -106,11 +113,12 @@ public class GamePanel extends JPanel implements Runnable {
         double amountOfTicks = 60.0;
         double ns = 1000000000 / amountOfTicks;
         double delta = 0;
+        gametimer.startTimer();
         while(gameStatus) {
             long now = System.nanoTime();
-            delta += (now -lastTime)/ns;
+            delta += (now - lastTime)/ns;
             lastTime = now;
-            if(delta >=1) {
+            if(delta >= 1) {
                 move();
                 checkPaddleBound();
                 checkCollision();
@@ -118,6 +126,7 @@ public class GamePanel extends JPanel implements Runnable {
                 delta--;
             }
         }
+        gametimer.stopTimer();
     }
 
     // Move the paddle and ball
@@ -202,6 +211,7 @@ public class GamePanel extends JPanel implements Runnable {
             // If there is no brick left, the player wins the game.
             if (bricks.size() == 0) {
                 gameStatus = false;
+                gametimer.stopTimer();
             }
         }
     }
@@ -221,6 +231,10 @@ public class GamePanel extends JPanel implements Runnable {
     public class AL extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
+            //press space to start
+            if (e.getKeyCode()==KeyEvent.VK_SPACE) {
+                gameThread.start();
+            }
             paddle.keyPressed(e);
         }
 

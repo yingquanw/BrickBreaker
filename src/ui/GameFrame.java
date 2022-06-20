@@ -15,8 +15,8 @@ public class GameFrame extends JFrame {
         setVisible(true);
         setResizable(false);
         setTitle("Brick Breaker");
-        //Place the game at the middle of the screen
         pack();
+        //Place the game at the middle of the screen
         setLocationRelativeTo(null);
     }
 
