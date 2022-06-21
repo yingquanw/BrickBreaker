@@ -7,16 +7,16 @@ import java.awt.event.ActionListener;
 
 public class GameTimer extends JLabel {
 
-    int elapsedTime = 0;
-    int ten_milliseconds = 0;
-    int seconds = 0;
-    int minutes = 0;
-    String ten_milliseconds_string;
-    String seconds_string;
-    String minutes_string;
+    private int elapsedTime = 0;
+    private int ten_milliseconds = 0;
+    private int seconds = 0;
+    private int minutes = 0;
+    private String ten_milliseconds_string;
+    private String seconds_string;
+    private String minutes_string;
 
     //Timer updates per 10 milliseconds
-    Timer timer = new Timer(10, new ActionListener() {
+    private Timer timer = new Timer(10, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             elapsedTime = elapsedTime + 1;
             minutes = (elapsedTime/100) / 60;
